@@ -1,14 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-
-
-## Loading and preprocessing the data
-```{r, echo=FALSE}
-  library(ggplot2)
+performAnalysis <- function() {  
   dt <- read.csv("activity.csv") 
   dtByDate = aggregate(dt$steps, by=list(dt$date), FUN=sum, rm.na = T)    
   colnames(dtByDate) <- c("Date", "TotalSteps")  
@@ -18,19 +8,6 @@ output:
   
   x <- ggplot(dtByDate, aes(Day, weight= TotalSteps)) + geom_bar(aes(fill = Month), position = "dodge", binwidth=.4) +
     scale_x_discrete(limit = c(1:31))
-
-print (x)
-```
-## What is mean total number of steps taken per day?
-
-
-
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+  
+  print (x)
+}
