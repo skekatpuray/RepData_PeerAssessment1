@@ -7,10 +7,15 @@
 ## Warning: package 'ggplot2' was built under R version 3.1.3
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
+```
+## [1] 10
+```
+
+
+
 ## What is mean total number of steps taken per day?
 
-
+Mean:
 
 ## What is the average daily activity pattern?
 
