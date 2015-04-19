@@ -91,12 +91,64 @@ maxActivity <- dtAvgIntervals[nrow(dtAvgIntervals),]
 
 ```{r}
 print(maxActivity, type="html",row.names =FALSE )
-
 ```
 
 
 ## Inputing missing values
+```{r}
+NaCount <- length(filter(dt, is.na(steps))$steps)
+```
+Total missing values: `r NaCount`
+
+NA values for 'steps' are applied by calculating mean over the total of it's respective intervals. 
+
+```{r}
+dtAvgIntervals <- filter(dt, !is.na(steps))   
+dtAvgIntervals <- aggregate(dtAvgIntervals$steps, by=list(dtAvgIntervals$interval), FUN=mean, rm.na = T)  
+colnames(dtAvgIntervals) <- c("Interval", "AverageSteps")  
+mergeData <- merge(dt, dtAvgIntervals, by.x = "interval", by.y="Interval", all=T)  
+mergeData[is.na(mergeData$steps),]$steps = mergeData[is.na(mergeData$steps),]$AverageSteps  
+mergeData$AverageSteps = NULL
+correctedDtNonZero <- filter(mergeData, steps != 0)  
+```
+
+```{r, echo=TRUE,fig.width=10, fig.height=7}
+
+correctedMedian = aggregate(correctedDtNonZero$steps, by=list(correctedDtNonZero$date), FUN=median)      
+colnames(correctedMedian) <- c("Date", "Median")
+correctedMedian$Date <- strptime(correctedMedian$Date, "%Y-%m-%d")  
+correctedMedian$Month <- months(correctedMedian$Date)
+correctedMedian$Day <- as.numeric(format(correctedMedian$Date , "%d"))  
+plotCorrectedMedian <- ggplot(correctedMedian, aes(Day, weight= Median)) + geom_bar(aes(fill = Month), position = "dodge", binwidth=.4) +
+  scale_x_discrete(limit = c(1:31)) + xlab("Day of the month") + ylab("Median (steps)") +
+  ggtitle("Median of the total steps across two months")
+
+print (plotCorrectedMedian)
 
 
+correctedMean = aggregate(correctedDtNonZero$steps, by=list(correctedDtNonZero$date), FUN=mean)      
+colnames(correctedMean) <- c("Date", "Mean")
+correctedMean$Date <- strptime(correctedMean$Date, "%Y-%m-%d")  
+correctedMean$Month <- months(correctedMean$Date)
+correctedMean$Day <- as.numeric(format(correctedMean$Date , "%d"))  
+plotCorrectedMean <- ggplot(correctedMean, aes(Day, weight= Mean)) + geom_bar(aes(fill = Month), position = "dodge", binwidth=.4) +
+  scale_x_discrete(limit = c(1:31)) + xlab("Day of the month") + ylab("Mean (steps)") +
+  ggtitle("Mean of the total steps across two months")
 
+print (plotCorrectedMean)
+```
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo=TRUE,fig.width=10, fig.height=7}
+correctedDtNonZero$Date = strptime(correctedDtNonZero$date, "%Y-%m-%d")
+correctedDtNonZero$Day = weekdays(correctedDtNonZero$Date)
+correctedDtNonZero$DayType = sapply(correctedDtNonZero$Day, function(d) if (d == "Sunday" | d == "Sunday") "Weekend" else "Weekday")
+correctedDtNonZero$Day = NULL
+correctedDtNonZero$Date = NULL
+correctedDtNonZeroAvg <- aggregate(correctedDtNonZero$steps, by=list(correctedDtNonZero$interval, correctedDtNonZero$DayType), FUN=mean, rm.na = T)  
+colnames(correctedDtNonZeroAvg) <- c("Interval","DayType","Steps")
+qplot(Interval, Steps, data = correctedDtNonZeroAvg, 
+      method="lm", geom="line",
+      facets =.~DayType)
+
+```
